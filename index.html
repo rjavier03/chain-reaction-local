@@ -14,6 +14,7 @@
             --border: #2e334d;
             --text: #e8eaf6;
             --accent: #ff6b6b;
+            --turn-color: transparent;
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,6 +28,17 @@
             flex-direction: column;
             overflow: hidden;
             perspective: 1200px;
+            transition: box-shadow 0.5s ease;
+        }
+
+        /* Pulsing Turn Effect - Only triggers when .my-turn-active is present */
+        body.my-turn-active {
+            animation: turnPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes turnPulse {
+            0%, 100% { box-shadow: inset 0 0 20px var(--turn-color); }
+            50% { box-shadow: inset 0 0 70px var(--turn-color); }
         }
 
         .modal-overlay {
@@ -112,7 +124,6 @@
         @keyframes pump { 0%, 100% { scale: 1; } 50% { scale: 1.25; } }
         @keyframes revolve { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Satisfying flying animation */
         .flying-atom { position: absolute; width: 18px; height: 18px; border-radius: 50%; z-index: 500; pointer-events: none; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px currentColor; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
         .turn-bar { padding: 6px 20px; border-radius: 30px; font-weight: 900; }
@@ -302,7 +313,6 @@
                 cell.count = 0; cell.owner = -1; 
                 const el = document.getElementById(`c-${r}-${c}`); if(el) el.innerHTML = "";
                 playSfx(150, 'triangle', 0.2);
-                // Slow/Satisfying timing: Wait for flying atoms before next stage
                 await Promise.all([
                     ...n.map(([nr, nc]) => animateFlyingAtom(r, c, nr, nc, pIdx)),
                     new Promise(res => setTimeout(res, 250)).then(() => Promise.all(n.map(([nr, nc]) => addAtom(nr, nc, pIdx))))
@@ -323,12 +333,7 @@
                 cont = document.createElement('div'); cont.className = "atom-container";
                 cont.style.setProperty('--r-speed', el.style.getPropertyValue('--r-speed') || '3s'); el.appendChild(cont);
             }
-            
-            // Force all children to current owner color to prevent "different color" bug
-            Array.from(cont.children).forEach(a => {
-                a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
-            });
-
+            Array.from(cont.children).forEach(a => a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx]);
             if (cont.children.length < cell.count) {
                 const a = document.createElement('div'); a.className = `atom a${cell.count-1}`;
                 a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
@@ -352,8 +357,6 @@
                             cont.style.setProperty('--r-speed', el.style.getPropertyValue('--r-speed') || '3s');
                             el.appendChild(cont);
                         }
-                        
-                        // Enforce color uniformity
                         const targetColor = COLORS[G.players[cell.owner].colorIdx];
                         while (cont.children.length > cell.count) cont.lastChild.remove();
                         while (cont.children.length < cell.count) {
@@ -374,11 +377,11 @@
                 const fly = document.createElement('div'); fly.className = 'flying-atom';
                 const color = COLORS[G.players[pIdx].colorIdx];
                 fly.style.backgroundColor = color;
-                fly.style.color = color; // For shadow
+                fly.style.color = color;
                 fly.style.left = s.left + 21 + 'px'; fly.style.top = s.top + 21 + 'px';
                 document.body.appendChild(fly);
                 requestAnimationFrame(() => { fly.style.left = t.left + 21 + 'px'; fly.style.top = t.top + 21 + 'px'; });
-                setTimeout(() => { fly.remove(); resolve(); }, 600); // Slower, more fluid transition
+                setTimeout(() => { fly.remove(); resolve(); }, 600);
             });
         }
 
@@ -390,8 +393,26 @@
 
         function updateGameUI() {
             const cur = G.players[G.currentTurn]; if(!cur) return;
-            const ui = document.getElementById('turn-ui'); ui.innerText = (cur.id === G.myId) ? "YOUR TURN" : `${cur.name.toUpperCase()}'S TURN`;
+            const isMyTurn = (cur.id === G.myId);
+            
+            // UI text update
+            const ui = document.getElementById('turn-ui'); 
+            ui.innerText = isMyTurn ? "YOUR TURN" : `${cur.name.toUpperCase()}'S TURN`;
             ui.style.backgroundColor = COLORS[cur.colorIdx];
+
+            // Set the color for the border effect
+            document.documentElement.style.setProperty('--turn-color', COLORS[cur.colorIdx] + '66');
+
+            // --- PULSING INDICATOR LOGIC ---
+            // Only add the pulsing animation class if it's the current user's turn.
+            if (isMyTurn) {
+                document.body.classList.add('my-turn-active');
+            } else {
+                document.body.classList.remove('my-turn-active');
+                // Optional: keep a very faint, static glow for other players
+                document.body.style.boxShadow = `inset 0 0 15px ${COLORS[cur.colorIdx]}33`;
+            }
+
             const counts = G.players.map((_, i) => G.grid.flat().reduce((s, c) => s + (c.owner === i ? c.count : 0), 0));
             document.getElementById('score-list').innerHTML = G.players.map((p, i) => `<div class="score-item ${G.currentTurn === i ? 'active' : ''} ${!p.isActive ? 'eliminated' : ''}"><div style="display:flex; align-items:center; gap:8px"><div class="dot" style="background:${COLORS[p.colorIdx]}"></div><span>${p.name}</span></div><b>${counts[i]}</b></div>`).join('');
         }
