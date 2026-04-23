@@ -16,11 +16,7 @@
             --accent: #ff6b6b;
         }
         
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
             font-family: 'Nunito', sans-serif;
@@ -32,7 +28,37 @@
             overflow: hidden;
             perspective: 1200px;
         }
-        /* Lobby UI */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .victory-card {
+            background: var(--surface);
+            padding: 3.5rem;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+            text-align: center;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6);
+            transform: scale(0.8);
+            animation: modalPop 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49) forwards;
+        }
+
+        @keyframes modalPop { to { transform: scale(1); } }
+
+        #winner-display {
+            font-family: 'Fredoka One';
+            font-size: 4rem;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
         
         .screen {
             position: fixed;
@@ -53,235 +79,74 @@
             width: 100%;
             max-width: 420px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
         
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { font-size: 0.7rem; font-weight: bold; color: var(--accent); letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        input, select, button { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: #0b0e14; color: white; outline: none; }
+        button { background: var(--accent); border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        header { height: 60px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: var(--surface); border-bottom: 2px solid var(--border); z-index: 10; }
+        main { flex: 1; display: flex; overflow: hidden; }
+        #game-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
         
-        label {
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: var(--accent);
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            display: block;
-        }
+        #scoreboard { width: 240px; background: var(--surface); border-left: 2px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .score-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(0, 0, 0, 0.3); border-radius: 12px; border: 2px solid transparent; }
+        .score-item.active { border-color: var(--accent); background: rgba(255, 107, 107, 0.1); }
+        .score-item.eliminated { opacity: 0.2; filter: grayscale(1); }
         
-        input,
-        select,
-        button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: #0b0e14;
-            color: white;
-            outline: none;
-        }
+        #grid { display: grid; gap: 4px; background: var(--border); padding: 6px; border-radius: 12px; }
+        .cell { background: var(--bg); width: 60px; height: 60px; position: relative; cursor: pointer; border-radius: 6px; }
+        .atom-container { position: absolute; inset: 0; pointer-events: none; animation: revolve var(--r-speed) linear infinite; }
+        .atom { position: absolute; width: 18px; height: 18px; border-radius: 50%; left: 50%; top: 50%; margin-left: -9px; margin-top: -9px; box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.4); animation: pump var(--p-speed) ease-in-out infinite; transition: background-color 0.3s ease; }
         
-        button {
-            background: var(--accent);
-            border: none;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: 0.2s;
-        }
+        .count-1 .a0 { transform: translate(0, 0); }
+        .count-2 .a0 { transform: rotate(0deg) translateX(16px); }
+        .count-2 .a1 { transform: rotate(180deg) translateX(16px); }
+        .count-3 .a0 { transform: rotate(0deg) translateX(17px); }
+        .count-3 .a1 { transform: rotate(120deg) translateX(17px); }
+        .count-3 .a2 { transform: rotate(240deg) translateX(17px); }
         
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-        }
-        /* Layout */
+        @keyframes pump { 0%, 100% { scale: 1; } 50% { scale: 1.25; } }
+        @keyframes revolve { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        header {
-            height: 60px;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--surface);
-            border-bottom: 2px solid var(--border);
-            z-index: 10;
-        }
-        
-        main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-        
-        #game-area {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 20px;
-        }
-        
-        #scoreboard {
-            width: 240px;
-            background: var(--surface);
-            border-left: 2px solid var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .score-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            border: 2px solid transparent;
-            transition: 0.3s;
-        }
-        
-        .score-item.active {
-            border-color: var(--accent);
-            background: rgba(255, 107, 107, 0.1);
-        }
-        
-        .score-item.eliminated {
-            opacity: 0.2;
-            filter: grayscale(1);
-        }
-        /* Grid & Cell Mechanics */
-        
-        #grid {
-            display: grid;
-            gap: 4px;
-            background: var(--border);
-            padding: 6px;
-            border-radius: 12px;
-        }
-        
-        .cell {
-            background: var(--bg);
-            width: 60px;
-            height: 60px;
-            position: relative;
-            cursor: pointer;
-            border-radius: 6px;
-            transform-style: preserve-3d;
-        }
-        /* 3D Ball Orbital System */
-        
-        .atom-container {
-            position: absolute;
-            inset: 0;
-            transform-style: preserve-3d;
-            pointer-events: none;
-            animation: revolve var(--r-speed) linear infinite var(--r-dir);
-        }
-        
-        .atom {
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            left: 50%;
-            top: 50%;
-            margin-left: -9px;
-            margin-top: -9px;
-            box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 255, 255, 0.2);
-            transform-style: preserve-3d;
-            animation: pump var(--p-speed) ease-in-out var(--p-delay) infinite;
-        }
-        /* Fixed Orbital Positions */
-        
-        .count-1 .a0 {
-            transform: translate(0, 0);
-        }
-        
-        .count-2 .a0 {
-            transform: rotate(0deg) translateX(16px);
-        }
-        
-        .count-2 .a1 {
-            transform: rotate(180deg) translateX(16px);
-        }
-        
-        .count-3 .a0 {
-            transform: rotate(0deg) translateX(17px);
-        }
-        
-        .count-3 .a1 {
-            transform: rotate(120deg) translateX(17px);
-        }
-        
-        .count-3 .a2 {
-            transform: rotate(240deg) translateX(17px);
-        }
-        
-        @keyframes pump {
-            0%,
-            100% {
-                scale: 1;
-            }
-            50% {
-                scale: 1.25;
-            }
-        }
-        
-        @keyframes revolve {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .flying-atom {
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            z-index: 500;
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.2, 0, 0.2, 1);
-        }
-        
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        
-        .turn-bar {
-            padding: 6px 20px;
-            border-radius: 30px;
-            font-weight: 900;
-        }
+        /* Satisfying flying animation */
+        .flying-atom { position: absolute; width: 18px; height: 18px; border-radius: 50%; z-index: 500; pointer-events: none; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px currentColor; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .turn-bar { padding: 6px 20px; border-radius: 30px; font-weight: 900; }
     </style>
 </head>
 
 <body>
 
+    <div id="victory-modal" class="modal-overlay">
+        <div class="victory-card">
+            <h2 style="color: var(--accent); letter-spacing: 4px;">DOMINATION</h2>
+            <div id="winner-display">PLAYER</div>
+            <button onclick="location.reload()" style="margin-top: 20px;">New Match</button>
+        </div>
+    </div>
+
     <div id="setup-screen" class="screen">
         <div class="card" id="lobby-ui">
             <h1 style="font-family:'Fredoka One'; color:var(--accent); font-size: 2.2rem; margin-bottom: 1.5rem;">3D REACTION</h1>
-            <div class="input-group"><label>NICKNAME</label><input type="text" id="user-name" placeholder="Enter Player Name"></div>
+            <div class="input-group"><label>NICKNAME</label><input type="text" id="user-name" placeholder="Enter Name"></div>
             <div id="host-controls">
                 <div style="display:flex; gap:10px; margin-bottom: 10px;">
                     <div class="input-group" style="flex:1"><label>ARENA</label>
-                        <select id="grid-size">
-                            <option value="6x9">6x9</option><option value="8x12" selected>8x12</option>
-                            <option value="10x15">10x15</option>
-                        </select>
+                        <select id="grid-size"><option value="6x9">6x9</option><option value="8x12" selected>8x12</option><option value="10x15">10x15</option></select>
                     </div>
                     <div class="input-group" style="flex:1"><label>PLAYERS</label>
                         <select id="max-players">
-                            <option value="2">2</option><option value="3">3</option><option value="4" selected>4</option>
-                            <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                            <option value="2">2 Players</option>
+                            <option value="3">3 Players</option>
+                            <option value="4" selected>4 Players</option>
+                            <option value="5">5 Players</option>
+                            <option value="6">6 Players</option>
+                            <option value="7">7 Players</option>
+                            <option value="8">8 Players</option>
                         </select>
                     </div>
                 </div>
@@ -294,7 +159,7 @@
 
         <div class="card" id="waiting-ui" style="display:none">
             <h2 style="font-family:'Fredoka One'; color: var(--accent)">LOBBY</h2>
-            <h1 id="display-id" style="letter-spacing: 5px; margin: 15px 0; cursor: pointer;" onclick="copyCode()">------</h1>
+            <h1 id="display-id" style="letter-spacing: 5px; margin: 15px 0;">------</h1>
             <div id="player-list" style="text-align:left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px;"></div>
             <button id="start-btn" disabled onclick="hostInitGame()">Start Game</button>
         </div>
@@ -306,321 +171,247 @@
     </header>
 
     <main>
-        <div id="game-area">
-            <div id="grid"></div>
-        </div>
+        <div id="game-area"><div id="grid"></div></div>
         <aside id="scoreboard">
-            <h3 style="font-family:'Fredoka One'; margin-bottom:10px; color:var(--accent); font-size: 0.9rem;">SCOREBOARD</h3>
+            <h3 style="font-family:'Fredoka One'; color:var(--accent); font-size: 0.9rem; margin-bottom:10px;">SCOREBOARD</h3>
             <div id="score-list"></div>
         </aside>
     </main>
 
     <script>
         const COLORS = ['#ff4d4d', '#4d96ff', '#6bcb77', '#ffd93d', '#c77dff', '#ff9f43', '#0fbcf9', '#ef5777'];
+        
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSfx(freq, type = 'sine', duration = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq / 2, audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
         const G = {
-            peer: null,
-            connections: [],
-            conn: null,
-            isHost: false,
-            myId: null,
-            myName: "",
-            players: [],
-            grid: [],
-            rows: 0,
-            cols: 0,
-            currentTurn: 0,
-            gameStarted: false,
-            isExploding: false
+            peer: null, connections: [], conn: null, isHost: false, myId: null, myName: "",
+            players: [], grid: [], rows: 0, cols: 0, currentTurn: 0, gameStarted: false,
+            isExploding: false, winnerDeclared: false
         };
 
         function startHosting() {
-            G.myName = document.getElementById('user-name').value || "Host";
-            G.isHost = true;
+            G.myName = document.getElementById('user-name').value || "Host"; G.isHost = true;
             const sid = Math.floor(100000 + Math.random() * 900000).toString();
             G.peer = new Peer(sid);
             G.peer.on('open', id => {
-                G.myId = id;
-                G.players.push({
-                    id,
-                    name: G.myName,
-                    colorIdx: 0,
-                    isActive: true,
-                    firstMoveDone: false
-                });
+                G.myId = id; G.players.push({ id, name: G.myName, colorIdx: 0, isActive: true, firstMoveDone: false });
                 showLobby(id);
             });
-            G.peer.on('connection', c => {
-                c.on('open', () => c.on('data', data => handleData(data, c)));
-            });
+            G.peer.on('connection', c => { c.on('open', () => c.on('data', data => handleData(data, c))); });
         }
 
         function joinRoom() {
-            const target = document.getElementById('room-id-input').value;
-            G.myName = document.getElementById('user-name').value || "Player";
+            const target = document.getElementById('room-id-input').value; G.myName = document.getElementById('user-name').value || "Player";
             G.peer = new Peer();
             G.peer.on('open', id => {
-                G.myId = id;
-                G.conn = G.peer.connect(target);
-                G.conn.on('open', () => {
-                    G.conn.send({
-                        type: 'join',
-                        name: G.myName
-                    });
-                    showLobby(target);
-                });
+                G.myId = id; G.conn = G.peer.connect(target);
+                G.conn.on('open', () => { G.conn.send({ type: 'join', name: G.myName }); showLobby(target); });
                 G.conn.on('data', handleData);
             });
         }
 
-        function handleData(data, c) {
+        async function handleData(data, c) {
             if (data.type === 'join' && G.isHost) {
-                if (G.players.length >= parseInt(document.getElementById('max-players').value)) return;
-                const p = {
-                    id: c.peer,
-                    name: data.name,
-                    colorIdx: G.players.length,
-                    isActive: true,
-                    firstMoveDone: false
-                };
-                G.players.push(p);
-                G.connections.push(c);
-                broadcast({
-                    type: 'sync-lobby',
-                    players: G.players
-                });
-                updateLobbyUI();
+                const max = parseInt(document.getElementById('max-players').value);
+                if (G.players.length >= max) return;
+                const p = { id: c.peer, name: data.name, colorIdx: G.players.length, isActive: true, firstMoveDone: false };
+                G.players.push(p); G.connections.push(c);
+                broadcast({ type: 'sync-lobby', players: G.players }); updateLobbyUI();
             }
-            if (data.type === 'sync-lobby') {
-                G.players = data.players;
-                updateLobbyUI();
-            }
+            if (data.type === 'sync-lobby') { G.players = data.players; updateLobbyUI(); }
             if (data.type === 'start-game') {
-                G.players = data.players;
-                setupGrid(data.rows, data.cols);
-                G.gameStarted = true;
-                document.getElementById('setup-screen').style.display = 'none';
-                updateGameUI();
+                G.players = data.players; setupGrid(data.rows, data.cols); G.gameStarted = true;
+                document.getElementById('setup-screen').style.display = 'none'; updateGameUI();
             }
             if (data.type === 'move' && G.isHost) executeMove(data.r, data.c, data.pIdx);
+            if (data.type === 'move-step') {
+                if (data.isExplosion) {
+                    playSfx(150, 'triangle', 0.2);
+                    G.grid[data.r][data.c].owner = -1; G.grid[data.r][data.c].count = 0;
+                    const el = document.getElementById(`c-${data.r}-${data.c}`); if(el) el.innerHTML = "";
+                    data.neighbors.forEach(n => animateFlyingAtom(data.r, data.c, n[0], n[1], data.pIdx));
+                } else {
+                    playSfx(400, 'sine', 0.1);
+                    G.grid[data.r][data.c].owner = data.pIdx; G.grid[data.r][data.c].count = data.count;
+                    updateCellAdditively(data.r, data.c, data.pIdx);
+                }
+            }
             if (data.type === 'sync-state') {
-                G.grid = data.grid;
-                G.currentTurn = data.currentTurn;
-                G.players = data.players;
-                G.isExploding = false;
-                renderAll();
-                updateGameUI();
-                checkWin();
+                G.grid = data.grid; G.currentTurn = data.currentTurn; G.players = data.players;
+                G.isExploding = false; 
+                syncAllCells(); 
+                updateGameUI(); checkWin();
             }
         }
 
-        function broadcast(msg) {
-            G.connections.forEach(conn => conn.send(msg));
-        }
+        function broadcast(msg) { G.connections.forEach(conn => conn.send(msg)); }
 
         function setupGrid(r, c) {
-            G.rows = r;
-            G.cols = c;
-            const el = document.getElementById('grid');
-            el.style.gridTemplateColumns = `repeat(${c}, 1fr)`;
-            el.innerHTML = "";
-            G.grid = Array.from({
-                length: r
-            }, () => []);
+            G.rows = r; G.cols = c;
+            const el = document.getElementById('grid'); el.style.gridTemplateColumns = `repeat(${c}, 1fr)`;
+            el.innerHTML = ""; G.grid = Array.from({ length: r }, () => []);
             for (let i = 0; i < r; i++) {
                 for (let j = 0; j < c; j++) {
                     let cap = 4;
                     if ((i === 0 || i === r - 1) && (j === 0 || j === c - 1)) cap = 2;
                     else if (i === 0 || i === r - 1 || j === 0 || j === c - 1) cap = 3;
-                    G.grid[i][j] = {
-                        owner: -1,
-                        count: 0,
-                        cap
-                    };
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.id = `c-${i}-${j}`;
-                    cell.style.setProperty('--p-delay', (Math.random() * 1.5) + 's');
-                    cell.style.setProperty('--p-speed', (1.2 + Math.random() * 0.4) + 's');
-                    cell.style.setProperty('--r-speed', (2 + Math.random() * 2) + 's');
-                    cell.style.setProperty('--r-dir', Math.random() > 0.5 ? 'normal' : 'reverse');
-                    cell.onclick = () => playerClick(i, j);
-                    el.appendChild(cell);
+                    G.grid[i][j] = { owner: -1, count: 0, cap };
+                    const cell = document.createElement('div'); cell.className = 'cell'; cell.id = `c-${i}-${j}`;
+                    cell.style.setProperty('--r-speed', (2.5 + Math.random()) + 's');
+                    cell.onclick = () => playerClick(i, j); el.appendChild(cell);
                 }
             }
         }
 
         function playerClick(r, c) {
-            if (G.isExploding || !G.gameStarted) return;
+            if (G.isExploding || !G.gameStarted || G.winnerDeclared) return;
             const idx = G.players.findIndex(p => p.id === G.myId);
-            if (G.currentTurn !== idx || !G.players[idx].isActive) return;
-            if (G.grid[r][c].owner !== -1 && G.grid[r][c].owner !== idx) return;
-            G.isExploding = true;
-            if (G.isHost) executeMove(r, c, idx);
-            else G.conn.send({
-                type: 'move',
-                r,
-                c,
-                pIdx: idx
-            });
+            if (G.currentTurn !== idx || G.grid[r][c].owner !== -1 && G.grid[r][c].owner !== idx) return;
+            if (G.isHost) executeMove(r, c, idx); else G.conn.send({ type: 'move', r, c, pIdx: idx });
         }
 
         async function executeMove(r, c, pIdx) {
-            G.players[pIdx].firstMoveDone = true;
+            G.isExploding = true; G.players[pIdx].firstMoveDone = true;
             await addAtom(r, c, pIdx);
-            G.players.forEach((p, i) => {
-                if (p.isActive && p.firstMoveDone) p.isActive = G.grid.flat().some(cell => cell.owner === i);
-            });
+            G.players.forEach((p, i) => { if (p.firstMoveDone) p.isActive = G.grid.flat().some(cell => cell.owner === i); });
             let next = (G.currentTurn + 1) % G.players.length;
             while (!G.players[next].isActive) next = (next + 1) % G.players.length;
             G.currentTurn = next;
-            const state = {
-                type: 'sync-state',
-                grid: G.grid,
-                currentTurn: G.currentTurn,
-                players: G.players
-            };
-            broadcast(state);
-            handleData(state);
+            const state = { type: 'sync-state', grid: G.grid, currentTurn: G.currentTurn, players: G.players };
+            broadcast(state); handleData(state);
         }
 
         async function addAtom(r, c, pIdx) {
-            const cell = G.grid[r][c];
-            const prevOwner = cell.owner;
-            cell.owner = pIdx;
-            cell.count++;
+            if (G.winnerDeclared) return;
+            const cell = G.grid[r][c]; cell.owner = pIdx; cell.count++;
             if (cell.count >= cell.cap) {
-                cell.count = 0;
-                cell.owner = -1;
-                renderCell(r, c);
-                const n = [
-                    [r - 1, c],
-                    [r + 1, c],
-                    [r, c - 1],
-                    [r, c + 1]
-                ].filter(([nr, nc]) => nr >= 0 && nr < G.rows && nc >= 0 && nc < G.cols);
-                await Promise.all(n.map(([nr, nc]) => animateFlyingAtom(r, c, nr, nc, pIdx)));
-                for (let [nr, nc] of n) await addAtom(nr, nc, pIdx);
+                const n = [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([nr,nc]) => nr>=0 && nr<G.rows && nc>=0 && nc<G.cols);
+                broadcast({ type: 'move-step', r, c, pIdx, isExplosion: true, neighbors: n });
+                cell.count = 0; cell.owner = -1; 
+                const el = document.getElementById(`c-${r}-${c}`); if(el) el.innerHTML = "";
+                playSfx(150, 'triangle', 0.2);
+                // Slow/Satisfying timing: Wait for flying atoms before next stage
+                await Promise.all([
+                    ...n.map(([nr, nc]) => animateFlyingAtom(r, c, nr, nc, pIdx)),
+                    new Promise(res => setTimeout(res, 250)).then(() => Promise.all(n.map(([nr, nc]) => addAtom(nr, nc, pIdx))))
+                ]);
             } else {
-                if (prevOwner !== -1 && prevOwner !== pIdx) renderCell(r, c);
-                else smartAdd(r, c, pIdx);
-                await new Promise(res => setTimeout(res, 120));
+                broadcast({ type: 'move-step', r, c, pIdx, isExplosion: false, count: cell.count });
+                updateCellAdditively(r, c, pIdx); playSfx(400, 'sine', 0.1);
+                await new Promise(res => setTimeout(res, 150));
+            }
+            checkWin();
+        }
+
+        function updateCellAdditively(r, c, pIdx) {
+            const cell = G.grid[r][c]; const el = document.getElementById(`c-${r}-${c}`); if (!el) return;
+            el.className = `cell count-${cell.count}`;
+            let cont = el.querySelector('.atom-container');
+            if (!cont) {
+                cont = document.createElement('div'); cont.className = "atom-container";
+                cont.style.setProperty('--r-speed', el.style.getPropertyValue('--r-speed') || '3s'); el.appendChild(cont);
+            }
+            
+            // Force all children to current owner color to prevent "different color" bug
+            Array.from(cont.children).forEach(a => {
+                a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
+            });
+
+            if (cont.children.length < cell.count) {
+                const a = document.createElement('div'); a.className = `atom a${cell.count-1}`;
+                a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
+                a.style.setProperty('--p-speed', (1 + Math.random()) + 's');
+                cont.appendChild(a);
             }
         }
 
-        function smartAdd(r, c, pIdx) {
-            const el = document.getElementById(`c-${r}-${c}`);
-            let cont = el.querySelector('.atom-container');
-            if (!cont) {
-                cont = document.createElement('div');
-                cont.className = 'atom-container';
-                el.appendChild(cont);
+        function syncAllCells() {
+            for (let i = 0; i < G.rows; i++) {
+                for (let j = 0; j < G.cols; j++) {
+                    const cell = G.grid[i][j];
+                    const el = document.getElementById(`c-${i}-${j}`);
+                    if (!el) continue;
+                    if (cell.count === 0) { el.innerHTML = ""; el.className = "cell"; }
+                    else {
+                        el.className = `cell count-${cell.count}`;
+                        let cont = el.querySelector('.atom-container');
+                        if (!cont) {
+                            cont = document.createElement('div'); cont.className = "atom-container";
+                            cont.style.setProperty('--r-speed', el.style.getPropertyValue('--r-speed') || '3s');
+                            el.appendChild(cont);
+                        }
+                        
+                        // Enforce color uniformity
+                        const targetColor = COLORS[G.players[cell.owner].colorIdx];
+                        while (cont.children.length > cell.count) cont.lastChild.remove();
+                        while (cont.children.length < cell.count) {
+                            const a = document.createElement('div'); a.className = `atom a${cont.children.length}`;
+                            a.style.setProperty('--p-speed', (1 + Math.random()) + 's');
+                            cont.appendChild(a);
+                        }
+                        Array.from(cont.children).forEach(a => a.style.backgroundColor = targetColor);
+                    }
+                }
             }
-            const count = parseInt(el.getAttribute('data-count') || "0") + 1;
-            el.setAttribute('data-count', count);
-            el.className = `cell count-${count}`;
-            const a = document.createElement('div');
-            a.className = `atom a${count-1}`;
-            a.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
-            cont.appendChild(a);
         }
 
         function animateFlyingAtom(sr, sc, tr, tc, pIdx) {
             return new Promise(resolve => {
                 const s = document.getElementById(`c-${sr}-${sc}`).getBoundingClientRect();
                 const t = document.getElementById(`c-${tr}-${tc}`).getBoundingClientRect();
-                const fly = document.createElement('div');
-                fly.className = 'flying-atom';
-                fly.style.backgroundColor = COLORS[G.players[pIdx].colorIdx];
-                fly.style.left = s.left + 21 + 'px';
-                fly.style.top = s.top + 21 + 'px';
+                const fly = document.createElement('div'); fly.className = 'flying-atom';
+                const color = COLORS[G.players[pIdx].colorIdx];
+                fly.style.backgroundColor = color;
+                fly.style.color = color; // For shadow
+                fly.style.left = s.left + 21 + 'px'; fly.style.top = s.top + 21 + 'px';
                 document.body.appendChild(fly);
-                requestAnimationFrame(() => {
-                    fly.style.left = t.left + 21 + 'px';
-                    fly.style.top = t.top + 21 + 'px';
-                });
-                setTimeout(() => {
-                    fly.remove();
-                    resolve();
-                }, 400);
+                requestAnimationFrame(() => { fly.style.left = t.left + 21 + 'px'; fly.style.top = t.top + 21 + 'px'; });
+                setTimeout(() => { fly.remove(); resolve(); }, 600); // Slower, more fluid transition
             });
         }
 
-        function renderCell(r, c) {
-            const cell = G.grid[r][c];
-            const el = document.getElementById(`c-${r}-${c}`);
-            el.innerHTML = "";
-            el.setAttribute('data-count', cell.count);
-            if (cell.count === 0) {
-                el.className = "cell";
-                return;
-            }
-            el.className = `cell count-${cell.count}`;
-            const cont = document.createElement('div');
-            cont.className = "atom-container";
-            for (let i = 0; i < cell.count; i++) {
-                const a = document.createElement('div');
-                a.className = `atom a${i}`;
-                a.style.backgroundColor = COLORS[G.players[cell.owner].colorIdx];
-                cont.appendChild(a);
-            }
-            el.appendChild(cont);
-        }
-
-        function renderAll() {
-            for (let i = 0; i < G.rows; i++)
-                for (let j = 0; j < G.cols; j++) renderCell(i, j);
-        }
-
-        function showLobby(id) {
-            document.getElementById('lobby-ui').style.display = 'none';
-            document.getElementById('waiting-ui').style.display = 'block';
-            document.getElementById('display-id').innerText = id;
-            updateLobbyUI();
-        }
-
+        function showLobby(id) { document.getElementById('lobby-ui').style.display = 'none'; document.getElementById('waiting-ui').style.display = 'block'; document.getElementById('display-id').innerText = id; }
         function updateLobbyUI() {
             document.getElementById('player-list').innerHTML = G.players.map(p => `<div style="display:flex; align-items:center; gap:10px; margin:5px 0;"><div class="dot" style="background:${COLORS[p.colorIdx]}"></div> ${p.name}</div>`).join('');
             if (G.isHost) document.getElementById('start-btn').disabled = G.players.length < 2;
         }
 
         function updateGameUI() {
-            const cur = G.players[G.currentTurn];
-            const ui = document.getElementById('turn-ui');
-            ui.innerText = (cur.id === G.myId) ? "YOUR TURN" : `${cur.name.toUpperCase()}'S TURN`;
+            const cur = G.players[G.currentTurn]; if(!cur) return;
+            const ui = document.getElementById('turn-ui'); ui.innerText = (cur.id === G.myId) ? "YOUR TURN" : `${cur.name.toUpperCase()}'S TURN`;
             ui.style.backgroundColor = COLORS[cur.colorIdx];
             const counts = G.players.map((_, i) => G.grid.flat().reduce((s, c) => s + (c.owner === i ? c.count : 0), 0));
             document.getElementById('score-list').innerHTML = G.players.map((p, i) => `<div class="score-item ${G.currentTurn === i ? 'active' : ''} ${!p.isActive ? 'eliminated' : ''}"><div style="display:flex; align-items:center; gap:8px"><div class="dot" style="background:${COLORS[p.colorIdx]}"></div><span>${p.name}</span></div><b>${counts[i]}</b></div>`).join('');
         }
 
         function checkWin() {
-            const active = G.players.filter(p => p.isActive);
-            if (active.length === 1 && G.players.some(p => p.firstMoveDone)) {
-                alert(active[0].name + " DOMINATED!");
-                location.reload();
+            if (G.winnerDeclared || !G.players.some(p => p.firstMoveDone)) return;
+            const alive = G.players.filter((p, i) => G.grid.flat().some(c => c.owner === i) || !p.firstMoveDone);
+            if (G.players.filter(p => p.firstMoveDone).length > 1 && alive.length === 1) {
+                G.winnerDeclared = true;
+                document.getElementById('winner-display').innerText = alive[0].name;
+                document.getElementById('winner-display').style.color = COLORS[alive[0].colorIdx];
+                document.getElementById('victory-modal').style.display = 'flex';
             }
         }
 
         function hostInitGame() {
             const [c, r] = document.getElementById('grid-size').value.split('x').map(Number);
-            broadcast({
-                type: 'start-game',
-                rows: r,
-                cols: c,
-                players: G.players
-            });
-            handleData({
-                type: 'start-game',
-                rows: r,
-                cols: c,
-                players: G.players
-            });
-        }
-
-        function copyCode() {
-            navigator.clipboard.writeText(document.getElementById('display-id').innerText);
-            alert("Code copied!");
+            const data = { type: 'start-game', rows: r, cols: c, players: G.players };
+            broadcast(data); handleData(data);
         }
     </script>
 </body>
-
 </html>
